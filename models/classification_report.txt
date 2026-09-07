@@ -1,0 +1,18 @@
+Overall Validation Accuracy: 93.49%
+
+Classification Report:
+                      precision    recall  f1-score   support
+
+  bacterial_soft_rot       0.94      0.89      0.91       276
+      black_sigatoka       0.91      0.91      0.91        70
+  bract_mosaic_virus       1.00      1.00      1.00        20
+             healthy       0.81      0.90      0.85        51
+         insect_pest       0.94      0.98      0.96       262
+        moko_disease       1.00      1.00      1.00        20
+      panama_disease       0.95      0.97      0.96        39
+potassium_deficiency       0.95      0.94      0.95        88
+     yellow_sigatoka       0.94      0.93      0.94       127
+
+            accuracy                           0.93       953
+           macro avg       0.94      0.95      0.94       953
+        weighted avg       0.94      0.93      0.93       953
