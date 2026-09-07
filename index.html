@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI ตรวจโรคใบกล้วยจากรูปถ่ายด้วยเทคโนโลยี Deep Learning - แม่นยำ รวดเร็ว ช่วยเหลือเกษตรกรไทย">
+    <title>BananaGuard AI - ระบบตรวจโรคใบกล้วยอัจฉริยะ</title>
+    <!-- Google Fonts: Prompt for Thai & Outfit for English digits/headers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --accent: #ffd54f;
+            --accent-dark: #ffb300;
+            --bg: #f4f7f5;
+            --text-dark: #1b2e1e;
+            --text-light: #ffffff;
+            --text-muted: #5c6f60;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-glass: rgba(255, 255, 255, 0.7);
+            --border-radius: 20px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Status Colors */
+            --status-healthy: #2e7d32;
+            --status-warn: #ef6c00;
+            --status-danger: #c62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Prompt', 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(76, 175, 80, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 213, 79, 0.05) 0px, transparent 50%);
+        }
+
+        /* Nav Bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(46, 125, 50, 0.1);
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary-light);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-cta-nav {
+            background: var(--primary);
+            color: white !important;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
+        }
+
+        .btn-cta-nav:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 140px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1.3;
+            margin-bottom: 20px;
+        }
+
+        .hero-text h1 span {
+            color: var(--primary-light);
+            background: linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(46, 125, 50, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Signature Element: Floating Leaf SVG Background Pattern */
+        .leaf-signature {
+            position: absolute;
+            width: 130%;
+            height: 130%;
+            z-index: -1;
+            opacity: 0.08;
+            pointer-events: none;
+            animation: rotate-leaf 20s linear infinite;
+        }
+
+        .hero-img {
+            width: 100%;
+            max-width: 420px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            border: 8px solid white;
+            transform: rotate(2deg);
+            transition: var(--transition);
+        }
+
+        .hero-img:hover {
+            transform: rotate(0deg) scale(1.03);
+        }
+
+        /* Interactive Analyzer Core Section */
+        .analyzer-section {
+            background: white;
+            padding: 80px 20px;
+            border-top: 1px solid rgba(46, 125, 50, 0.05);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 50px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        .analyzer-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        /* Upload Container card */
+        .upload-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(46, 125, 50, 0.1);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .upload-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dropzone {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            border: 3px dashed #c2d6c4;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .dropzone.dragover {
+            border-color: var(--primary-light);
+            background: rgba(76, 175, 80, 0.05);
+            transform: scale(0.98);
+        }
+
+        .dropzone svg.upload-icon {
+            width: 64px;
+            height: 64px;
+            fill: var(--primary-light);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .dropzone:hover svg.upload-icon {
+            transform: translateY(-5px) scale(1.05);
+            fill: var(--primary);
+        }
+
+        .dropzone h3 {
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .dropzone p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Image Preview style */
+        .preview-wrapper {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            display: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-change-image {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .btn-change-image:hover {
+            background: var(--status-danger);
+            transform: scale(1.05);
+        }
+
+        /* Results Panel Card */
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(46, 125, 50, 0.1);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 400px;
+            transition: var(--transition);
+        }
+
+        .state-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .state-empty svg {
+            width: 80px;
+            height: 80px;
+            fill: #c2d6c4;
+            margin-bottom: 20px;
+        }
+
+        /* Loading State */
+        .state-loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .spinner-ring {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(76, 175, 80, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+
+        .state-loading h3 {
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .state-loading p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Success & Prediction Results */
+        .state-success {
+            display: none;
+        }
+
+        .success-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(46, 125, 50, 0.05);
+            padding-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.healthy {
+            background-color: rgba(46, 125, 50, 0.1);
+            color: var(--status-healthy);
+        }
+
+        .status-badge.warning {
+            background-color: rgba(239, 108, 0, 0.1);
+            color: var(--status-warn);
+        }
+
+        .status-badge.danger {
+            background-color: rgba(198, 40, 40, 0.1);
+            color: var(--status-danger);
+        }
+
+        .result-title {
+            font-size: 1.7rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .confidence-section {
+            margin-bottom: 25px;
+        }
+
+        .confidence-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .confidence-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: #e2ede4;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .confidence-bar-fill.healthy { background: var(--status-healthy); }
+        .confidence-bar-fill.warning { background: var(--status-warn); }
+        .confidence-bar-fill.danger { background: var(--status-danger); }
+
+        .details-box {
+            background: #f7faf8;
+            border: 1px solid rgba(46, 125, 50, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .details-box h4 {
+            font-size: 1.05rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details-box p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .treatment-list {
+            padding-left: 20px;
+            font-size: 0.92rem;
+            color: var(--text-dark);
+        }
+
+        .treatment-list li {
+            margin-bottom: 6px;
+        }
+
+        /* Error state styling */
+        .state-error {
+            display: none;
+            text-align: center;
+            color: var(--status-danger);
+        }
+
+        .state-error svg {
+            width: 70px;
+            height: 70px;
+            fill: var(--status-danger);
+            margin-bottom: 15px;
+        }
+
+        .state-error h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .state-error p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        /* Why early detection - Pain points section */
+        .painpoints-section {
+            background: #edf3ee;
+            padding: 80px 20px;
+        }
+
+        .grid-3 {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .painpoint-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .painpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .painpoint-card .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .painpoint-card .icon-circle svg {
+            width: 26px;
+            height: 26px;
+            fill: var(--primary);
+        }
+
+        .painpoint-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .painpoint-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        /* 3 Services Cards Section */
+        .services-section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .services-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(46, 125, 50, 0.05);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .service-header-color {
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .service-body {
+            padding: 30px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-body h3 {
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .service-body p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .service-link {
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .service-link:hover {
+            color: var(--primary-dark);
+            gap: 10px;
+        }
+
+        /* List of Diseases Section */
+        .diseases-section {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .disease-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .disease-item {
+            border: 1px solid rgba(46, 125, 50, 0.06);
+            background: #fcfdfe;
+            padding: 25px;
+            border-radius: 16px;
+            transition: var(--transition);
+        }
+
+        .disease-item:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(46, 125, 50, 0.15);
+            background: white;
+        }
+
+        .disease-item h4 {
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .disease-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer CTA & Footer */
+        .footer-cta {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #113614 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-cta h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer-cta p {
+            font-size: 1.1rem;
+            color: #b0cbb4;
+            max-width: 600px;
+            margin: 0 auto 35px;
+        }
+
+        footer {
+            background: #0f2411;
+            color: #7b967f;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        footer a {
+            color: #a3cbb5;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes rotate-leaf {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Mobile Responsive adjustments (Mobile-first design principles) */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding-top: 110px;
+                padding-bottom: 50px;
+            }
+
+            .hero-text h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero-text p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .analyzer-container {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-3, .services-cards, .disease-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer p {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- เริ่มต้นหน้าจอลงทะเบียน (ฉากกั้น) -->
+<div id="register-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(140deg, var(--primary) 0%, var(--primary-light) 20%, #edf3ee 80%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    
+    <div style="background-color: #f9f9f9; border: 1px solid #ddd; padding: 80px; border-radius: 30px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
+        <h2 style="margin-bottom: 0;font-size: 50px ;">📋ลงทะเบียนเข้าใช้งาน</h2>
+        <p style="color: #666; margin-bottom:15px;font-size 10px;">ระบบ AI ตรวจโรคใบกล้วย</p>
+        
+        <input type="text" placeholder="พิมพ์ชื่อผู้ใช้งาน" style="width: 80%; padding: 10px; margin-bottom: 10px; font-size: 16px;border-radius: 12px; border: 1px solid #ccc;"><br>
+        <input type="text" placeholder="รหัสผ่าน" style="width: 80%; padding: 10px; margin-bottom: 20px;font-size: 16px; border-radius: 12px; border: 1px solid #ccc;"><br>
+        
+        <button 
+    onclick="closeRegister()" 
+    onmouseover="this.style.backgroundColor='#246428'" 
+    onmouseout="this.style.backgroundColor='#2e7d32'" 
+    style="background-color: #2e7d32; color: white; border: none; width: 50%; padding: 10px 15px; font-size: 16px; border-radius: 15px; cursor: pointer; transition: 0.3s;">
+    ยืนยันและเข้าสู่ระบบ
+</button>
+    </div>
+
+</div>
+
+<!-- คำสั่งเปิดม่านเมื่อกดปุ่ม -->
+<script>
+    function closeRegister() {
+        document.getElementById('register-overlay').style.display = 'none';
+    }
+</script>
+<!-- สิ้นสุดหน้าจอลงทะเบียน -->
+
+
+    <!-- Nav Bar -->
+    <header id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <!-- Leaf SVG signature logo -->
+                <svg viewBox="0 0 512 512">
+                    <path d="M504.1 63.6c-9.1-9.1-23.4-10-33.5-2.1L387.9 128H288L144 272v48h48l144-144v-99.9l66.5-52.2c7.9-10.1 7-24.4-2.1-33.5zM224 432c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm-96-32c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm-64-64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zM32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm425.4-83.9l-58.9 46.3c1 5.8 1.5 11.7 1.5 17.6 0 53-43 96-96 96-5.9 0-11.8-.5-17.6-1.5L240.1 330.4C248.8 359 275.2 380 306 380c39.8 0 72-32.2 72-72 0-30.8-21-57.2-49.6-65.9l46.3-58.9c5.8 1 11.7 1.5 17.6 1.5 53 0 96-43 96-96 0-5.9-.5-11.8-1.5-17.6z"/>
+                </svg>
+                <span>BananaGuard AI</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#analyzer">ตรวจโรคกล้วย</a></li>
+                <li><a href="#diseases">ประเภทโรค</a></li>
+                <li><a href="#painpoints">เกี่ยวกับเรา</a></li>
+                <li><a href="#analyzer" class="btn-cta-nav">วิเคราะห์เลย</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-text">
+            <h1>ช่วยเกษตรกรตรวจโรคใบกล้วยด้วย <span>ระบบ AI อัจฉริยะ</span></h1>
+            <p>อัพโหลดรูปถ่ายใบตองหรือใบกล้วยที่ผิดปกติ เพื่อจำแนกประเภทโรคพืชและรับข้อเสนอแนะในการรักษาที่ถูกต้อง ป้องกันความเสียหายทางการเกษตรได้รวดเร็วทันใจ</p>
+            <div class="hero-buttons">
+                <a href="#analyzer" class="btn btn-primary">เริ่มต้นอัพโหลดรูป</a>
+                <a href="#diseases" class="btn btn-secondary">ดูรายชื่อโรคที่ตรวจได้</a>
+            </div>
+        </div>
+        <div class="hero-image-wrapper">
+            <!-- Signature background decorative leaf SVG -->
+            <svg class="leaf-signature" viewBox="0 0 512 512">
+                <path fill="#2e7d32" d="M504.1 63.6c-9.1-9.1-23.4-10-33.5-2.1L387.9 128H288L144 272v48h48l144-144v-99.9l66.5-52.2c7.9-10.1 7-24.4-2.1-33.5zM224 432c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm-96-32c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm-64-64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zM32 208c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm425.4-83.9l-58.9 46.3c1 5.8 1.5 11.7 1.5 17.6 0 53-43 96-96 96-5.9 0-11.8-.5-17.6-1.5L240.1 330.4C248.8 359 275.2 380 306 380c39.8 0 72-32.2 72-72 0-30.8-21-57.2-49.6-65.9l46.3-58.9c5.8 1 11.7 1.5 17.6 1.5 53 0 96-43 96-96 0-5.9-.5-11.8-1.5-17.6z"/>
+            </svg>
+            <img src="https://images.unsplash.com/photo-1566393028639-d108a42c46a7?auto=format&fit=crop&w=600&q=80" alt="แปลงกล้วยสดใส" class="hero-img" id="hero-img">
+        </div>
+    </section>
+
+    <!-- Main AI Analyzer Section -->
+    <section class="analyzer-section" id="analyzer">
+        <div class="section-header">
+            <h2>อัพโหลดรูปถ่ายเพื่อตรวจสอบโรค</h2>
+            <p>ถ่ายรูปใบกล้วยที่เกิดโรคตรงๆ โดยให้เห็นบริเวณรอยแผลจุดโรคชัดเจน และกดอัพโหลดที่ด้านล่างนี้</p>
+        </div>
+
+        <div class="analyzer-container">
+            <!-- Left Side: Image uploader -->
+            <div class="upload-card">
+                <!-- Dropzone default -->
+                <div class="dropzone" id="dropzone">
+                    <svg class="upload-icon" viewBox="0 0 24 24">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                    </svg>
+                    <h3>ลากไฟล์ภาพใบกล้วยมาวางที่นี่</h3>
+                    <p>หรือคลิกเพื่อเลือกไฟล์จากอุปกรณ์ของคุณ (รองรับ JPG, PNG)</p>
+                </div>
+                
+                <!-- Image Preview mode -->
+                <div class="preview-wrapper" id="preview-wrapper">
+                    <img src="" alt="ภาพตัวอย่างใบกล้วย" class="preview-img" id="preview-img">
+                    <button class="btn-change-image" id="btn-change-image">เปลี่ยนรูปภาพ</button>
+                </div>
+
+                <input type="file" id="file-input" class="file-input" accept="image/*">
+            </div>
+
+            <!-- Right Side: Live Results panel -->
+            <div class="result-card" id="result-card">
+                <!-- Empty state -->
+                <div class="state-empty" id="state-empty">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/>
+                    </svg>
+                    <h3>รอภาพถ่ายใบตองเพื่อทำการวิเคราะห์</h3>
+                    <p>อัพโหลดรูปภาพในฝั่งซ้ายเพื่อดูผลลัพธ์การวินิจฉัย</p>
+                </div>
+
+                <!-- Loading state -->
+                <div class="state-loading" id="state-loading">
+                    <div class="spinner-ring"></div>
+                    <h3>กำลังประมวลผลวิเคราะห์ด้วย AI</h3>
+                    <p>ระบบกำลังเชื่อมต่อกับโมเดล EfficientNet-B0...</p>
+                </div>
+
+                <!-- Success prediction results state -->
+                <div class="state-success" id="state-success">
+                    <div class="success-header">
+                        <div>
+                            <h3 class="result-title" id="predicted-class-th">โรคใบจุดสีเหลือง</h3>
+                            <span style="color: var(--text-muted); font-size: 0.9rem;" id="predicted-class-en">yellow_sigatoka</span>
+                        </div>
+                        <span class="status-badge warning" id="status-badge">Warning</span>
+                    </div>
+
+                    <div class="confidence-section">
+                        <div class="confidence-row">
+                            <span>ความแม่นยำในการวิเคราะห์</span>
+                            <span style="font-family: 'Outfit';" id="confidence-pct">89.5%</span>
+                        </div>
+                        <div class="confidence-bar-bg">
+                            <div class="confidence-bar-fill warning" id="confidence-bar-fill" style="width: 89.5%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="details-box">
+                        <h4>🌱 รายละเอียดของโรคและอาการ</h4>
+                        <p id="disease-symptoms">คำอธิบายรายละเอียดลักษณะของโรคที่โมเดลตรวจพบ</p>
+                    </div>
+
+                    <div class="details-box" style="border-left: 4px solid var(--primary-light);">
+                        <h4>💡 คำแนะนำเบื้องต้นและการรักษา</h4>
+                        <ul class="treatment-list" id="disease-treatment">
+                            <li>ขั้นตอนปฏิบัติตามสุขลักษณะการเกษตร</li>
+                            <li>การใช้ยาหรือการฉีดพ่นบำรุง</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Error handling state -->
+                <div class="state-error" id="state-error">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <h3>ไม่สามารถตรวจวิเคราะห์รูปภาพได้</h3>
+                    <p id="error-message">เซิร์ฟเวอร์ระบบ API ปิดอยู่ หรือรูปแบบไฟล์ไม่รองรับ</p>
+                    <button class="btn btn-secondary" style="padding: 10px 20px; font-size: 0.9rem;" id="btn-retry">ลองอีกครั้ง</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Us / Pain points Section -->
+    <section class="painpoints-section" id="painpoints">
+        <div class="section-header">
+            <h2>ทำไมต้องตรวจโรคใบกล้วยตั้งแต่ระยะแรก?</h2>
+            <p>ความเสียหายของกล้วยมักจะลุกลามอย่างรวดเร็วทางท่อน้ำเลี้ยง ทำให้ไม่สามารถกู้คืนผลผลิตได้หากล่าช้าเกินไป</p>
+        </div>
+
+        <div class="grid-3">
+            <div class="painpoint-card">
+                <div class="icon-circle">
+                    <!-- Warning SVG icon -->
+                    <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                </div>
+                <h3>การระบาดลามเร็ว</h3>
+                <p>โรคเช่น โรคเน่าโมโก หรือโรคปานามา สามารถระบาดและทำลายกล้วยยกแปลงได้ภายในไม่กี่สัปดาห์</p>
+            </div>
+            <div class="painpoint-card">
+                <div class="icon-circle">
+                    <!-- Dollar SVG icon -->
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+                </div>
+                <h3>ลดความเสียหายทางเงิน</h3>
+                <p>วินิจฉัยแม่นยำช่วยลดต้นทุนการซื้อยากำจัดราหรือแมลงโดยไม่จำเป็น และช่วยปกป้องกำไรผลผลิต</p>
+            </div>
+            <div class="painpoint-card">
+                <div class="icon-circle">
+                    <!-- Heart SVG icon -->
+                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+                <h3>การดูแลที่เป็นมิตรกับโลก</h3>
+                <p>คำแนะนำสำหรับการรักษาเน้นแนวทางสุขอนามัยพืชอินทรีย์และการใช้เคมีตามความจำเป็นอย่างเหมาะสม</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services / Details Cards -->
+    <section class="services-section">
+        <div class="section-header">
+            <h2>บริการการวิเคราะห์และการใช้งาน</h2>
+            <p>ระบบตรวจโรคพืชที่ถูกพัฒนาสำหรับเกษตรกรยุคใหม่ เพื่อเข้าถึงการวินิจฉัยโรคพืชได้ฟรี 24 ชั่วโมง</p>
+        </div>
+        <div class="services-cards">
+            <!-- Card 1 -->
+            <div class="service-card">
+                <div class="service-header-color"></div>
+                <div class="service-body">
+                    <h3>วิเคราะห์รูปภาพแบบเรียลไทม์</h3>
+                    <p>ระบบใช้โครงข่ายประสาทเทียมระดับลึกวิเคราะห์ภาพพิกเซล เพื่อตรวจจับจุดแผลและเปรียบเทียบในไม่กี่วินาที</p>
+                    <a href="#analyzer" class="service-link">ทดลองใช้งานเลย &rarr;</a>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="service-card">
+                <div class="service-header-color" style="background: linear-gradient(90deg, var(--primary-light), var(--primary-dark));"></div>
+                <div class="service-body">
+                    <h3>รองรับการคัดกรอง 9 คลาส</h3>
+                    <p>รวมโรคยอดนิยมอย่าง ซิกาโตกา ปานามา โมโก ใบด่าง และความเสียหายจากการขาดสารอาหารหรือแมลง</p>
+                    <a href="#diseases" class="service-link">ดูรายละเอียดโรค &rarr;</a>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="service-card">
+                <div class="service-header-color" style="background: linear-gradient(90deg, var(--accent), var(--accent-dark));"></div>
+                <div class="service-body">
+                    <h3>คู่มือคำแนะนำฉบับเกษตร</h3>
+                    <p>เมื่อตรวจพบโรค เกษตรกรสามารถนำคำแนะนำไปปฏิบัติตามเบื้องต้นได้ทันทีเพื่อแยกพืชป่วยและรักษา</p>
+                    <a href="#analyzer" class="service-link">ลองอัพโหลดภาพดู &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diseases Info Grid -->
+    <section class="diseases-section" id="diseases">
+        <div class="section-header">
+            <h2>โรคและอาการขาดสารอาหารที่รองรับการตรวจจับ</h2>
+            <p>เราสามารถตรวจจำแนกประเภทอาการใบตองใบกล้วยผิดปกติได้ทั้งหมด 9 กลุ่มอาการดังต่อไปนี้</p>
+        </div>
+        
+        <div class="disease-grid">
+            <div class="disease-item">
+                <h4>โรคเน่าเละแบคทีเรีย <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Rot</span></h4>
+                <p>เกิดจากแบคทีเรีย ทำให้ใบและก้านใบกล้วยเน่าเละ มีสีน้ำตาลและมีกลิ่นเหม็นเฉาะขยายลุกลามอย่างรวดเร็ว</p>
+            </div>
+            <div class="disease-item">
+                <h4>โรคซิกาโตกาใบสีดำ <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Fungal</span></h4>
+                <p>โรคเชื้อราสร้างจุดลายทางขนานเส้นใบสีน้ำตาลดำ แผลวงแหวนจะแห้งกรอบและลดผลผลิตกล้วยอย่างมาก</p>
+            </div>
+            <div class="disease-item">
+                <h4>โรคใบด่างลายเส้นไวรัส <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Virus</span></h4>
+                <p>ไวรัสผ่านทางเพลี้ยอ่อนทำให้เกิดริ้วลายด่างสีเขียวอ่อนสลับเหลือง ลายเส้นสีเข้มบนก้านใบ ไม่มีทางรักษา</p>
+            </div>
+            <div class="disease-item">
+                <h4>ใบกล้วยสุขภาพดี <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-healthy);">Healthy</span></h4>
+                <p>ใบมีสีเขียวสด สมบูรณ์ แผ่นใบกว้างเหนียวแข็งแรง ไม่มีสปอร์ของเชื้อรา รอยทำลาย หรือความผิดปกติใดๆ</p>
+            </div>
+            <div class="disease-item">
+                <h4>ความเสียหายจากแมลง <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-warn);">Pests</span></h4>
+                <p>รอยใบขาดวิ่นหรือใบม้วนตัวเนื่องจากหนอนม้วนใบกล้วย หนอนผีเสื้อ ตั๊กแตนกัดแทะ และการทำลายของด้วง</p>
+            </div>
+            <div class="disease-item">
+                <h4>โรคเหี่ยวโมโก <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Rot</span></h4>
+                <p>โรคแบคทีเรียในท่อน้ำเลี้ยง ทำให้ใบเหี่ยวเหลืองและแตกหักพับอย่างรวดเร็ว ลำต้นภายในเน่าแห้งเป็นสีคล้ำ</p>
+            </div>
+            <div class="disease-item">
+                <h4>โรคเหี่ยวปานามา <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Fungal</span></h4>
+                <p>เชื้อราในดินเข้าทำลายระบบราก ทำให้ขอบใบแก่เหลืองกรอบแล้วพับห้อยลงมารอบโคนต้นกล้วยคล้ายกระโปรง</p>
+            </div>
+            <div class="disease-item">
+                <h4>การขาดโพแทสเซียม <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-warn);">Deficiency</span></h4>
+                <p>ใบมีสีเหลืองอมส้มสว่างอย่างฉับพลันเริ่มจากส่วนปลายและขอบใบเข้ามาแกนกลาง มักเกิดในดินทราย</p>
+            </div>
+            <div class="disease-item">
+                <h4>โรคซิกาโตกาใบสีเหลือง <span style="font-size: 0.8rem; font-family: 'Outfit'; color: var(--status-danger);">Fungal</span></h4>
+                <p>เชื้อราเข้าทำลายใบทำให้เป็นรอยสีเหลืองซีดเล็กๆ ก่อนขยายเป็นวงรีสีน้ำตาลตรงกลางแห้งสีเทาพาสเทล</p>
+            </div>
+        </div>
+    </section>
+<style>
+    /* กล่องครอบหลัก ซ่อนส่วนที่เกินขอบจอ */
+    .slider-container {
+        width: 100%;
+        overflow: hidden;
+        background-color: #ffffff;
+        padding: 30px 0;
+        position: relative;
+    }
+
+    /* แถวเรียงสินค้า */
+    .slider-track {
+        display: flex;
+        width: max-content;
+        animation: scrollSlider 30s linear infinite; /* ความเร็วในการไหล (ปรับเลขน้อยลงถ้าอยากให้เร็วขึ้น) */
+    }
+
+    /* หยุดไหลเมื่อเอาเมาส์ไปชี้ */
+    .slider-track:hover {
+        animation-play-state: paused;
+    }
+
+    /* ดีไซน์แต่ละชิ้นสินค้า */
+    .product-card {
+        width: 200px;
+        margin: 0 15px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .product-card img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+
+    .product-card img:hover {
+        transform: scale(1.05);
+    }
+
+    /* กำหนดการเคลื่อนที่วนลูป */
+    @keyframes scrollSlider {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+</style>
+
+<!-- ส่วนแสดงสินค้าไหล 5 ชิ้น -->
+<section class="slider-container">
+    <h2 style="text-align: center; color: #1b5e20; margin-bottom: 25px; font-size: 26px;">🛒 สินค้าแนะนำ</h2>
+    
+    <div class="slider-track">
+        <!-- ================= ชุดที่ 1 (สินค้าชิ้นที่ 1 ถึง 5) ================= -->
+        <div class="product-card">
+            <a href="https://shopee.co.th/%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B8%9C%E0%B8%A5%E0%B9%80%E0%B8%99%E0%B9%88%E0%B8%B2%E0%B8%94%E0%B8%B3-%E0%B9%83%E0%B8%9A%E0%B9%84%E0%B8%AB%E0%B8%A1%E0%B9%89-%E0%B9%83%E0%B8%9A%E0%B8%88%E0%B8%B8%E0%B8%94-%E0%B8%95%E0%B8%B2%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B8%B2%E0%B8%A2-%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B8%A3%E0%B8%B2%E0%B8%95%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B9%86-%E0%B8%81%E0%B8%B3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%94%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B9%81%E0%B8%9E%E0%B8%99%E0%B8%99%E0%B9%88%E0%B8%AD%E0%B8%99-%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%8A%E0%B8%99%E0%B8%B4%E0%B8%94-i.1049032417.27711285096?is_from_login=true1" target="_blank">
+               <img src="https://down-th.img.susercontent.com/file/th-11134207-7r98x-m05egu4ffmxkf2@resize_w900_nl.webp" alt="">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดเชื้อรา</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%B3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%95%E0%B8%B2%E0%B8%A2%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%A2-%E0%B9%83%E0%B8%99-%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%97%E0%B8%B5%E0%B9%88%E0%B9%80%E0%B8%81%E0%B8%B4%E0%B8%94%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B8%A3%E0%B8%B2-%E0%B8%89%E0%B8%B5%E0%B8%94%E0%B8%9E%E0%B9%88%E0%B8%99%E0%B9%84%E0%B8%AD%E0%B9%80%E0%B8%AD%E0%B8%AA%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%8A%E0%B8%99%E0%B8%B4%E0%B8%94-%28%E0%B8%82%E0%B8%99%E0%B8%B2%E0%B8%94-3-%E0%B8%A5%E0%B8%B4%E0%B8%95%E0%B8%A3-%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%8915-%E0%B9%84%E0%B8%A3%E0%B9%88%29-i.233601817.23644533087" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-7qul4-lhn1gouwsbdv8d@resize_w900_nl.webp" alt="สินค้า 2">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดโรคเหี่ยวปานามา</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/product/1587344537/56651786353?gads_t_sig=gqRjZGVrxHCFomtpsTE0MjUxOnRzc19zZGtfa2V5omt20QACpGFsZ2_SAAAAZKNkZWvAomN0xEAAAAAMCDZ1QISG3Y9eQ8yPVgAOiad7g2PqyaqkWO_9nGG8rv2GeSvTKVy0YH9Uq_tAMSkaB8ROm0FmD1_y4Fc6qmNpcGhlcnRleHTEcwAAAAwh7vhI40uFxuqdtpCX8Nl3of3u0s8rIbiNfSMYYyuiCqJrT_XB2dKY0I79gU1S5j0Nhatf40phWQ-R9WFcfudofK47gVL2gdEnEX2ceaXcu0un6zdH-1Lkg7ECC1Q9eLun6TyKQ12SzjLlqNesnj8&gad_source=1&gad_campaignid=23981607081&gbraid=0AAAAADPpYO0Kx51n_9YHIUUymD9wGFADH&gclid=EAIaIQobChMInOHTiOHclgMVUSx7Bx24KAIEEAkYAiABEgIJEvD_BwE" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-81ztq-mha9dig8bpxqe2@resize_w900_nl.webp" alt="สินค้า 3">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดหนอน ศัตรูพืช</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/12-11-18-%E0%B8%A2%E0%B8%B2%E0%B8%A3%E0%B8%B2-%E0%B8%A1%E0%B8%B5%E0%B8%A3%E0%B9%88%E0%B8%B2-(%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B9%81%E0%B8%9E%E0%B8%A5%E0%B9%87%E0%B8%81%E0%B8%8B%E0%B9%8C)-%E0%B9%81%E0%B8%9A%E0%B9%88%E0%B8%87%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%88%E0%B8%B8-5-Kg.-%E0%B8%9B%E0%B8%B8%E0%B9%8B%E0%B8%A2NPK-%E0%B9%84%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%A3%E0%B8%97-%E0%B9%82%E0%B8%9E%E0%B9%81%E0%B8%97%E0%B8%AA%E0%B9%80%E0%B8%8B%E0%B8%B5%E0%B8%A2%E0%B8%A1%E0%B8%8B%E0%B8%B1%E0%B8%A5%E0%B9%80%E0%B8%9F%E0%B8%95100-%E0%B8%9A%E0%B8%B3%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%83%E0%B8%9A-%E0%B8%A5%E0%B8%B3%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B8%A5%E0%B8%B3%E0%B8%95%E0%B9%89%E0%B8%99-%E0%B9%80%E0%B8%A3%E0%B9%88%E0%B8%87%E0%B8%94%E0%B8%AD%E0%B8%81-%E0%B8%82%E0%B8%A2%E0%B8%B2%E0%B8%A2%E0%B8%9C%E0%B8%A5-i.993356340.25570994377" target="_blank">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2pUeFJcmzHBbrsTbYn8WBDjMvsmLS1rSz4K7bwstE2glJpCD8DQHff00&s=10" alt="สินค้า 4">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ปุ๋ยเพิ่มโพแทสเซียม สูตร 12-11-18</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/product/241929440/47951266305?gads_t_sig=gqRjZGVrxHCFomtpsTE0MjUxOnRzc19zZGtfa2V5omt20QACpGFsZ2_SAAAAZKNkZWvAomN0xEAAAAAMCDZ1QISG3Y9eQ8yPVgAOiad7g2PqyaqkWO_9nGG8rv2GeSvTKVy0YH9Uq_tAMSkaB8ROm0FmD1_y4Fc6qmNpcGhlcnRleHTEcQAAAAwoUjRbBVX7XkFEo26FopwtilB7mnpfWM9jM_zSY97qPQ2eEvGqBIMp0P1USWfL1DhPCQaloPJwU-ZRFI4yIFUly0RtdqMHqrw-M7dypqGeviHxmNMh56MafiF6xHRYv2PkgGj5d_hCY5Iasz4L&gad_source=1&gad_campaignid=24028005579&gbraid=0AAAAADPpYO3daHnZ12sJVGpwOBDvp2Frn&gclid=CjwKCAjwwfnUBhAtEiwAfQpAYk28DOSsDQTFSi8Bbmns2Pj3DHgvme0uhCg1HDR_PbaRAZV9AvDeFhoCLv4QAvD_BwE" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-81zto-mgzufqe3t7v3f6@resize_w900_nl.webp" alt="สินค้า 5">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ปุ๋ยบำรุงต้น สูตร 13-13-21</p>
+        </div>
+
+
+        <!-- ================= ชุดที่ 2 (ก๊อปปี้ 5 ชิ้นด้านบนมาวางซ้ำ เพื่อให้ภาพไหลวนลูปไม่สะดุด) ================= -->
+        <div class="product-card">
+            <a href="https://shopee.co.th/%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B8%9C%E0%B8%A5%E0%B9%80%E0%B8%99%E0%B9%88%E0%B8%B2%E0%B8%94%E0%B8%B3-%E0%B9%83%E0%B8%9A%E0%B9%84%E0%B8%AB%E0%B8%A1%E0%B9%89-%E0%B9%83%E0%B8%9A%E0%B8%88%E0%B8%B8%E0%B8%94-%E0%B8%95%E0%B8%B2%E0%B8%A2%E0%B8%9E%E0%B8%A3%E0%B8%B2%E0%B8%A2-%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B8%A3%E0%B8%B2%E0%B8%95%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B9%86-%E0%B8%81%E0%B8%B3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%94%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B9%81%E0%B8%9E%E0%B8%99%E0%B8%99%E0%B9%88%E0%B8%AD%E0%B8%99-%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%8A%E0%B8%99%E0%B8%B4%E0%B8%94-i.1049032417.27711285096?is_from_login=true1" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-7r98x-m05egu4ffmxkf2@resize_w900_nl.webp" alt="">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดเชื้อรา</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%B3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%95%E0%B8%B2%E0%B8%A2%E0%B8%9E%E0%B8%A5%E0%B8%B2%E0%B8%A2-%E0%B9%83%E0%B8%99-%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%A5%E0%B9%89%E0%B8%A7%E0%B8%A2-%E0%B9%82%E0%B8%A3%E0%B8%84%E0%B8%97%E0%B8%B5%E0%B9%88%E0%B9%80%E0%B8%81%E0%B8%B4%E0%B8%94%E0%B8%88%E0%B8%B2%E0%B8%81%E0%B9%80%E0%B8%8A%E0%B8%B7%E0%B9%89%E0%B8%AD%E0%B8%A3%E0%B8%B2-%E0%B8%89%E0%B8%B5%E0%B8%94%E0%B8%9E%E0%B9%88%E0%B8%99%E0%B9%84%E0%B8%AD%E0%B9%80%E0%B8%AD%E0%B8%AA%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%81%E0%B8%B1%E0%B8%9A%E0%B8%9E%E0%B8%B7%E0%B8%8A%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%8A%E0%B8%99%E0%B8%B4%E0%B8%94-%28%E0%B8%82%E0%B8%99%E0%B8%B2%E0%B8%94-3-%E0%B8%A5%E0%B8%B4%E0%B8%95%E0%B8%A3-%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B9%84%E0%B8%94%E0%B9%8915-%E0%B9%84%E0%B8%A3%E0%B9%88%29-i.233601817.23644533087" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-7qul4-lhn1gouwsbdv8d@resize_w900_nl.webp" alt="สินค้า 2">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดโรคเหี่ยวปานามา</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/product/1587344537/56651786353?gads_t_sig=gqRjZGVrxHCFomtpsTE0MjUxOnRzc19zZGtfa2V5omt20QACpGFsZ2_SAAAAZKNkZWvAomN0xEAAAAAMCDZ1QISG3Y9eQ8yPVgAOiad7g2PqyaqkWO_9nGG8rv2GeSvTKVy0YH9Uq_tAMSkaB8ROm0FmD1_y4Fc6qmNpcGhlcnRleHTEcwAAAAwh7vhI40uFxuqdtpCX8Nl3of3u0s8rIbiNfSMYYyuiCqJrT_XB2dKY0I79gU1S5j0Nhatf40phWQ-R9WFcfudofK47gVL2gdEnEX2ceaXcu0un6zdH-1Lkg7ECC1Q9eLun6TyKQ12SzjLlqNesnj8&gad_source=1&gad_campaignid=23981607081&gbraid=0AAAAADPpYO0Kx51n_9YHIUUymD9wGFADH&gclid=EAIaIQobChMInOHTiOHclgMVUSx7Bx24KAIEEAkYAiABEgIJEvD_BwE" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-81ztq-mha9dig8bpxqe2@resize_w900_nl.webp" alt="สินค้า 3">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ยากำจัดหนอน ศัตรูพืช</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/12-11-18-%E0%B8%A2%E0%B8%B2%E0%B8%A3%E0%B8%B2-%E0%B8%A1%E0%B8%B5%E0%B8%A3%E0%B9%88%E0%B8%B2-(%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B9%81%E0%B8%9E%E0%B8%A5%E0%B9%87%E0%B8%81%E0%B8%8B%E0%B9%8C)-%E0%B9%81%E0%B8%9A%E0%B9%88%E0%B8%87%E0%B8%9A%E0%B8%A3%E0%B8%A3%E0%B8%88%E0%B8%B8-5-Kg.-%E0%B8%9B%E0%B8%B8%E0%B9%8B%E0%B8%A2NPK-%E0%B9%84%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%A3%E0%B8%97-%E0%B9%82%E0%B8%9E%E0%B9%81%E0%B8%97%E0%B8%AA%E0%B9%80%E0%B8%8B%E0%B8%B5%E0%B8%A2%E0%B8%A1%E0%B8%8B%E0%B8%B1%E0%B8%A5%E0%B9%80%E0%B8%9F%E0%B8%95100-%E0%B8%9A%E0%B8%B3%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B9%83%E0%B8%9A-%E0%B8%A5%E0%B8%B3%E0%B8%A3%E0%B8%B8%E0%B8%87%E0%B8%A5%E0%B8%B3%E0%B8%95%E0%B9%89%E0%B8%99-%E0%B9%80%E0%B8%A3%E0%B9%88%E0%B8%87%E0%B8%94%E0%B8%AD%E0%B8%81-%E0%B8%82%E0%B8%A2%E0%B8%B2%E0%B8%A2%E0%B8%9C%E0%B8%A5-i.993356340.25570994377" target="_blank">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2pUeFJcmzHBbrsTbYn8WBDjMvsmLS1rSz4K7bwstE2glJpCD8DQHff00&s=10" alt="สินค้า 4">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ปุ๋ยเพิ่มโพแทสเซียม สูตร 12-11-18</p>
+        </div>
+
+        <div class="product-card">
+            <a href="https://shopee.co.th/product/241929440/47951266305?gads_t_sig=gqRjZGVrxHCFomtpsTE0MjUxOnRzc19zZGtfa2V5omt20QACpGFsZ2_SAAAAZKNkZWvAomN0xEAAAAAMCDZ1QISG3Y9eQ8yPVgAOiad7g2PqyaqkWO_9nGG8rv2GeSvTKVy0YH9Uq_tAMSkaB8ROm0FmD1_y4Fc6qmNpcGhlcnRleHTEcQAAAAwoUjRbBVX7XkFEo26FopwtilB7mnpfWM9jM_zSY97qPQ2eEvGqBIMp0P1USWfL1DhPCQaloPJwU-ZRFI4yIFUly0RtdqMHqrw-M7dypqGeviHxmNMh56MafiF6xHRYv2PkgGj5d_hCY5Iasz4L&gad_source=1&gad_campaignid=24028005579&gbraid=0AAAAADPpYO3daHnZ12sJVGpwOBDvp2Frn&gclid=CjwKCAjwwfnUBhAtEiwAfQpAYk28DOSsDQTFSi8Bbmns2Pj3DHgvme0uhCg1HDR_PbaRAZV9AvDeFhoCLv4QAvD_BwE" target="_blank">
+                <img src="https://down-th.img.susercontent.com/file/th-11134207-81zto-mgzufqe3t7v3f6@resize_w900_nl.webp" alt="สินค้า 5">
+            </a>
+            <p style="margin-top: 10px; font-weight: bold; color: #333; font-size: 15px;">ปุ๋ยบำรุงต้น สูตร 13-13-21</p>
+        </div>
+    </div>
+</section>    <!-- Footer CTA -->
+    <section class="footer-cta">
+        <h2>ยกระดับการทำการเกษตรด้วย AI</h2>
+        <p>เริ่มต้นดูแลสวนกล้วยของคุณอย่างไร้รอยต่อ ลดต้นทุน เพิ่มผลผลิต ป้องกันโรคล่วงหน้า</p>
+        <a href="#analyzer" class="btn btn-primary" style="background: var(--accent); color: var(--text-dark); box-shadow: 0 8px 20px rgba(255, 213, 79, 0.3);">ทดลองวิเคราะห์ทันที</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            <span>&copy; 2026 BananaGuard AI. สงวนลิขสิทธิ์ทั้งหมด</span>
+            <span>พัฒนาสำหรับการวินิจฉัยโรคใบตองใบกล้วยด้วยเทคโนโลยี Deep Learning (PyTorch)</span>
+            <span><a href="#">นโยบายความเป็นส่วนตัว</a> | <a href="#analyzer">กลับไปด้านบน</a></span>
+        </p>
+    </footer>
+
+    <!-- Frontend logic with interaction -->
+    <script>
+        // Target API Endpoint URL
+        const API_URL = '/predict';
+
+        // Agricultural Database containing symptoms and treatment recommendations for 9 categories
+        const diseaseDatabase = {
+            'bacterial_soft_rot': {
+                nameTh: 'โรคเน่าเละแบคทีเรีย',
+                status: 'danger',
+                symptoms: 'ใบและก้านใบเน่าเหลวและเละเปื่อยเป็นเมือก มีสีเหลืองส้มเข้มจนถึงน้ำตาลดำ และมักจะส่งกลิ่นเหม็นเน่าเฉาะอย่างรุนแรง ลำต้นเทียมกล้วยอาจจะเน่าตามไปด้วย',
+                treatments: [
+                    'ตัดแต่งและขุดทำลายกอที่เป็นโรคออกไปเผานอกแปลงทันที อย่าทิ้งไว้ในแปลงเพื่อเลี่ยงการลาม',
+                    'ทาบริเวณแผลตัดด้วยปูนแดงกินหมากเพื่อป้องกันการซึมของแบคทีเรียตัวใหม่',
+                    'ฉีดพ่นกำจัดแบคทีเรียด้วยสารเคมี เช่น คอปเปอร์ไฮดรอกไซด์ หรือแคงเกอร์ชีลด์ ในช่วงระบาดรุนแรง',
+                    'ลดความชื้นรอบโคนต้น ห้ามระบายน้ำผ่านจากบริเวณกอที่เป็นโรคไปยังกออื่นๆ'
+                ]
+            },
+            'black_sigatoka': {
+                nameTh: 'โรคใบจุดสีดำ (Black Sigatoka)',
+                status: 'danger',
+                symptoms: 'มีเส้นขีดสีน้ำตาลแดงเล็กๆ ใต้ใบ จากนั้นขยายใหญ่เป็นรูปวงรีสีเข้มเกือบดำ แผลแห้งตรงกลางยุบลงสีเทาอ่อน ทำให้เนื้อใบกล้วยเสียหายมากและแห้งเหี่ยวเร็วกว่าปกติ',
+                treatments: [
+                    'ตัดแต่งใบกล้วยชั้นล่างที่เป็นรอยจุดโรคออกอย่างสม่ำเสมอเพื่อระบายการอากาศ',
+                    'เผาทำลายเศษใบแห้งที่เป็นโรคนอกแปลงปลูกเพื่อลดสปอร์เชื้อราสะสมในดิน',
+                    'พ่นสารป้องกันกำจัดโรคพืชในกลุ่ม คาร์เบนดาซิม, ไดฟีโนโคนาโซล หรือ โพรพิโคนาโซล ตามกำหนด',
+                    'จัดระยะการปลูกให้โปร่งสบาย แสงสว่างส่องถึงโคนต้นและไม่มีการสะสมของน้ำขังค้างบนหน้าใบ'
+                ]
+            },
+            'bract_mosaic_virus': {
+                nameTh: 'โรคไวรัสใบด่างลายเส้น (Bract Mosaic Virus)',
+                status: 'danger',
+                symptoms: 'ใบเกิดแถบลายด่างสีเขียวเข้มสลับสีเหลืองซีด เส้นใบและก้านใบมีรอยขีดจุดสีแดงเข้มจัดหรือน้ำตาลอมแดง ต้นแคระแกร็น หน่อที่แตกรอบต้นจะแสดงอาการแคระและเหี่ยว',
+                treatments: [
+                    'ขุดและเผาทำลายต้นกล้วยที่เป็นโรคทันที (โรคไวรัสในกล้วยไม่มีสารเคมีรักษาให้หายขาดได้)',
+                    'กำจัดแมลงพาหะ เช่น เพลี้ยอ่อนกล้วย โดยพ่นสารสกัดสะเดา หรือฉีดล้างเพลี้ยอ่อนด้วยน้ำยาไล่แมลง',
+                    'คัดเลือกหน่อพันธุ์กล้วยจากกอแม่ที่สมบูรณ์แข็งแรงและมั่นใจได้ว่าไม่มีไวรัสซ่อนเร้น',
+                    'ทำความสะอาดอุปกรณ์ตัดแต่งหน่อและใบทุกครั้งด้วยแอลกอฮอล์เพื่อป้องกันไวรัสติดไปกับเครื่องมือ'
+                ]
+            },
+            'healthy': {
+                nameTh: 'ใบกล้วยสุขภาพดี (Healthy Leaf)',
+                status: 'healthy',
+                symptoms: 'ใบสีเขียวสด สว่างสม่ำเสมอ แข็งแรงเหนียว ไม่มีรอยแผลเชื้อราสีเหลืองหรือน้ำตาล และไม่มีรอยกัดแทะเสียหายรุนแรงจากแมลงศัตรูพืช ท่อน้ำเลี้ยงเดินอย่างเป็นปกติ',
+                treatments: [
+                    'บำรุงใส่ปุ๋ยคอกหรือปุ๋ยหมักปีละ 2-3 ครั้งเพื่อรักษาระดับธาตุอาหารในดิน',
+                    'รดน้ำอย่างสม่ำเสมอให้มีความชื้นพอเหมาะ ระวังอย่าให้น้ำขังแฉะรอบบริเวณโคนต้นกล้วย',
+                    'ตัดแต่งใบกล้วยแห้งที่เหี่ยวห้อยลงมาอยู่เสมอเพื่อให้สภาพแวดล้อมกอโปร่ง โล่ง และแสงส่องถึง',
+                    'ตรวจเช็คใบกล้วยชั้นล่างสัปดาห์ละครั้ง เพื่อป้องกันโรคระบาดและรอยแมลงเข้าทำลายล่วงหน้า'
+                ]
+            },
+            'insect_pest': {
+                nameTh: 'ความเสียหายจากแมลงศัตรูพืช',
+                status: 'warning',
+                symptoms: 'ขอบใบมีรอยกัดเว้าแหว่ง แผ่นใบถูกม้วนเป็นหลอดกลมยาว (หนอนม้วนใบกล้วย) หรือพบตัวหนอน ดักแด้ คราบแมลงตามหลังใบ หรือใบกล้วยฉีกขาดชำรุดเสียหายจากตั๊กแตน',
+                treatments: [
+                    'ตัดใบกล้วยที่มีดักแด้หรือรอยหนอนม้วนใบกล้วยเอาไปเผาไฟทำลายเพื่อจำกัดประชากรหนอน',
+                    'ใช้สมุนไพรขับไล่แมลง เช่น การพ่นน้ำพริกแกงผสมน้ำสบู่ หรือน้ำส้มควันไม้ สม่ำเสมอใต้ใบ',
+                    'ใช้กระดาษหรือถุงครอบเครือกล้วยเพื่อป้องกันด้วงงวงกล้วยหรือแมลงเข้าไปเจาะกินผลกล้วย',
+                    'หากพบการระบาดของด้วงงวงกล้วย ให้ใช้เหยื่อล่อสารอินทรีย์รอบสวนและทำความสะอาดโคนต้นกล้วย'
+                ]
+            },
+            'moko_disease': {
+                nameTh: 'โรคเหี่ยวโมโก (Moko Disease)',
+                status: 'danger',
+                symptoms: 'กล้วยใบแก่ด้านล่างจะเหลืองซีด แห้งและพับห้อยลงอย่างรวดเร็ว ก้านใบหักง่าย ไส้กลางผลกล้วยเปลี่ยนเป็นเน่าสีดำ และท่อน้ำเลี้ยงในลำต้นเทียมมีสีน้ำตาลเข้ม',
+                treatments: [
+                    'ถอนทำลายต้นและหน่อในกอที่เป็นโรคทั้งหมดทันที ห้ามนำหน่อพันธุ์ไปขยายปลูกต่อเด็ดขาด',
+                    'โรยปูนขาว (Calcium hydroxide) หนาๆ ในหลุมที่ขุดกอกล้วยออกไป เพื่อฆ่าแบคทีเรียสะสมในดิน',
+                    'งดใช้อุปกรณ์เกษตรร่วมกับต้นอื่นๆ ก่อนนำไปจุ่มน้ำยาฆ่าเชื้อ เช่น เดทตอล หรือแอลกอฮอล์',
+                    'เว้นระยะพื้นที่หลุมดังกล่าวไว้ 1-2 ปี ห้ามนำพืชวงศ์กล้วยมาปลูกซ้ำในจุดเดิม'
+                ]
+            },
+            'panama_disease': {
+                nameTh: 'โรคเหี่ยวปานามา (Panama Disease)',
+                status: 'danger',
+                symptoms: 'ใบกล้วยแก่เริ่มเหลืองซีดจากขอบใบกระจายเข้าหาแกนใบ จากนั้นก้านใบจะลีบแบนลงและหักพับห้อยเหี่ยวตายคาลำต้น ลำต้นตรงระดับคอดินจะมีรอยแห้งฉีกตามยาว',
+                treatments: [
+                    'ขุดถอนโคนต้นกล้วยที่เป็นโรคทั้งหมดออกไปสับตากแดดหรือเผาทำลายนอกสวน',
+                    'ใช้ปูนขาวปรับสภาพดินในร่องหลุมเพื่อขัดขวางการขยายตัวของสปอร์เชื้อราฟิวซาเรียมในดิน',
+                    'เลือกใช้หน่อพันธุ์สะอาด ปราศจากโรคในการเพาะปลูก หรือเลือกสายพันธุ์ที่ทนทานต่อโรคปานามา',
+                    'ปรับทางน้ำไหลในสวน ไม่ให้น้ำจากหลุมกอที่เป็นโรคไหลผ่านรากกออื่นๆ'
+                ]
+            },
+            'potassium_deficiency': {
+                nameTh: 'การขาดธาตุโพแทสเซียม (Potassium Deficiency)',
+                status: 'warning',
+                symptoms: 'ปลายใบแก่และขอบใบจะเปลี่ยนเป็นสีส้มเหลืองสดใสอย่างรวดเร็ว แผ่นใบจะโค้งงอพับและหักแห้งเป็นสีน้ำตาล ผลกล้วยในเครือมีขนาดเล็กและไม่สมบูรณ์',
+                treatments: [
+                    'ใส่ปุ๋ยเคมีที่มีปริมาณโพแทสเซียมสูง เช่น ปุ๋ยเคมีสูตร 0-0-60 หรือปุ๋ยสูตรเสมอที่มีค่าท้ายสูง',
+                    'บำรุงด้วยปุ๋ยอินทรีย์ เช่น ขี้เถ้าแกลบ หรือปุ๋ยหมักจากมูลสัตว์ที่อุดมด้วยแร่ธาตุธรรมชาติ',
+                    'คลุมโคนต้นด้วยฟางข้าวเพื่อรักษาความชื้นรอบราก ช่วยให้รากกล้วยดูดซึมโพแทสเซียมได้ดีขึ้น',
+                    'ปรับการให้น้ำให้เพียงพอ ไม่แห้งแล้งจนเกินไปเนื่องจากความชื้นมีผลต่อการดึงแร่ธาตุโพแทสเซียม'
+                ]
+            },
+            'yellow_sigatoka': {
+                nameTh: 'โรคใบจุดสีเหลือง (Yellow Sigatoka)',
+                status: 'danger',
+                symptoms: 'เกิดจุดริ้วแต้มรูปสีเหลืองซีดขนานไปกับเส้นใบ จุดแผลจะขยายใหญ่เป็นรูปไข่สีน้ำตาลขอบรอบจุดมีวงสีเหลืองล้อมรอบ และตรงกลางแผลแห้งยุบเป็นสีเทาคล้ายกระดาษ',
+                treatments: [
+                    'ตัดแต่งและกำจัดใบที่เป็นโรคออกทันที เพื่อควบคุมสปอร์เชื้อราไม่ให้ปลิวไปตามลมสู่ต้นอื่น',
+                    'พ่นสารป้องกันกำจัดเชื้อรากลุ่มคาร์เบนดาซิม หรือคอปเปอร์ออกซีคลอไรด์ใต้ใบในช่วงเริ่มระบาด',
+                    'ทำความสะอาดเศษซากวัชพืชโคนกอให้โปร่ง อากาศถ่ายเทได้สะดวก แดดส่องถึงพื้นดิน',
+                    'หลีกเลี่ยงการให้น้ำกล้วยด้วยระบบสปริงเกลอร์ที่ฉีดฝอยสูงเลี่ยงหยดน้ำสะสมบนแผ่นใบกล้วย'
+                ]
+ 	    },
+            'Not_banana': {
+                nameTh: 'กรุณาลองใหม่อีกครั้ง',
+                status: 'Unknown',
+                symptoms: 'ระบบรองรับเฉพาะต้นกล้วย ใบ หรือกล้วยเท่านั้น',
+                treatments: [
+                    'กรุณาถ่ายภาพใบกล้วยหรือผลกล้วยใหม่อีกครั้ง',
+                    'ตรวจสอบให้แน่ใจว่าวัตถุอยู่ในระยะโฟกัส',
+                ]
+
+            }
+        };
+
+        // DOM elements configuration
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const previewWrapper = document.getElementById('preview-wrapper');
+        const previewImg = document.getElementById('preview-img');
+        const btnChangeImage = document.getElementById('btn-change-image');
+        
+        // Result States panels
+        const stateEmpty = document.getElementById('state-empty');
+        const stateLoading = document.getElementById('state-loading');
+        const stateSuccess = document.getElementById('state-success');
+        const stateError = document.getElementById('state-error');
+        const errorMessage = document.getElementById('error-message');
+        const btnRetry = document.getElementById('btn-retry');
+
+        // Result dynamic output elements
+        const predClassTh = document.getElementById('predicted-class-th');
+        const predClassEn = document.getElementById('predicted-class-en');
+        const statusBadge = document.getElementById('status-badge');
+        const confidencePct = document.getElementById('confidence-pct');
+        const confidenceBarFill = document.getElementById('confidence-bar-fill');
+        const diseaseSymptoms = document.getElementById('disease-symptoms');
+        const diseaseTreatment = document.getElementById('disease-treatment');
+
+        // Active file holder variable
+        let selectedFile = null;
+
+        // Click on dropzone triggers hidden file input
+        dropzone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Hidden input file selection listener
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop event listener setups
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle selected file details and setup preview
+        function handleFileSelection(file) {
+            if (!file.type.startsWith('image/')) {
+                showErrorState("ประเภทไฟล์ไม่ถูกต้อง! กรุณาอัพโหลดเฉพาะไฟล์รูปภาพ (JPG, PNG)");
+                return;
+            }
+            
+            selectedFile = file;
+            
+            // Generate visual image preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                dropzone.style.display = 'none';
+                previewWrapper.style.display = 'block';
+                
+                // Run prediction immediately
+                sendImageToBackend(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Change current selected image function
+        btnChangeImage.addEventListener('click', () => {
+            resetUploader();
+        });
+
+        // Reset elements back to initial upload state
+        function resetUploader() {
+            selectedFile = null;
+            fileInput.value = '';
+            previewImg.src = '';
+            previewWrapper.style.display = 'none';
+            dropzone.style.display = 'flex';
+            
+            // Switch result views
+            stateEmpty.style.display = 'flex';
+            stateLoading.style.display = 'none';
+            stateSuccess.style.display = 'none';
+            stateError.style.display = 'none';
+        }
+
+        // Retry helper handler
+        btnRetry.addEventListener('click', () => {
+            if (selectedFile) {
+                sendImageToBackend(selectedFile);
+            } else {
+                resetUploader();
+            }
+        });
+
+        // Send file to FastAPI using Fetch API
+        async function sendImageToBackend(file) {
+            showLoadingState();
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    let errDetail = "เกิดข้อผิดพลาดในการเรียกเซิร์ฟเวอร์";
+                    try {
+                        const errJson = await response.json();
+                        errDetail = errJson.detail || errDetail;
+                    } catch(e) {}
+                    throw new Error(`HTTP Error ${response.status}: ${errDetail}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showSuccessState(data.prediction, data.confidence);
+                } else {
+                    throw new Error("ระบบประมวลผลข้อมูลส่งกลับสถานะไม่สำเร็จ");
+                }
+                
+            } catch (error) {
+                console.error("API Fetch Error:", error);
+                
+                // Formulate clear, helpful error descriptions
+                let cleanMessage = "ไม่สามารถติดต่อเซิร์ฟเวอร์วิเคราะห์ AI ได้";
+                if (error.message.includes("Failed to fetch")) {
+                    cleanMessage = "เซิร์ฟเวอร์หลังบ้าน (FastAPI) ยังไม่ได้เปิดใช้งาน หรือถูกจำกัดการเชื่อมต่อ (ตรวจสอบการเปิด uvicorn ที่พอร์ต 8000)";
+                } else {
+                    cleanMessage = error.message;
+                }
+                showErrorState(cleanMessage);
+            }
+        }
+
+        // State switching UI helper functions
+        function showLoadingState() {
+            stateEmpty.style.display = 'none';
+            stateLoading.style.display = 'flex';
+            stateSuccess.style.display = 'none';
+            stateError.style.display = 'none';
+        }
+
+        function showErrorState(msg) {
+            stateEmpty.style.display = 'none';
+            stateLoading.style.display = 'none';
+            stateSuccess.style.display = 'none';
+            stateError.style.display = 'flex';
+            errorMessage.textContent = msg;
+        }
+
+        function showSuccessState(predictedClass, confidenceScore) {
+            stateEmpty.style.display = 'none';
+            stateLoading.style.display = 'none';
+            stateError.style.display = 'none';
+            stateSuccess.style.display = 'block';
+
+            // Find matching data in agricultural database
+            const dbMatch = diseaseDatabase[predictedClass];
+            
+            if (dbMatch) {
+                predClassTh.textContent = dbMatch.nameTh;
+                predClassEn.textContent = predictedClass;
+                diseaseSymptoms.textContent = dbMatch.symptoms;
+                
+                // Render treatment steps list dynamically
+                diseaseTreatment.innerHTML = '';
+                dbMatch.treatments.forEach(treatment => {
+                    const li = document.createElement('li');
+                    li.textContent = treatment;
+                    diseaseTreatment.appendChild(li);
+                });
+
+                // Style badge and confidence bars based on status severity
+                statusBadge.textContent = dbMatch.status.toUpperCase();
+                statusBadge.className = `status-badge ${dbMatch.status}`;
+                
+                confidencePct.textContent = `${confidenceScore.toFixed(2)}%`;
+                confidenceBarFill.className = `confidence-bar-fill ${dbMatch.status}`;
+                confidenceBarFill.style.width = `${confidenceScore}%`;
+            } else {
+                // Fallback details if class not found in local client database
+                predClassTh.textContent = predictedClass.replace(/_/g, ' ');
+                predClassEn.textContent = predictedClass;
+                diseaseSymptoms.textContent = "ไม่พบรายละเอียดข้อบ่งชี้อาการโรคนี้ในระบบฐานข้อมูลชั่วคราว";
+                diseaseTreatment.innerHTML = "<li>กรุณาตัดเศษซากใบพืชไปกำจัดภายนอกแปลง และสังเกตพฤติกรรมการระบาดลามเพิ่ม</li>";
+                
+                statusBadge.textContent = "WARNING";
+                statusBadge.className = "status-badge warning";
+                
+                confidencePct.textContent = `${confidenceScore.toFixed(2)}%`;
+                confidenceBarFill.className = "confidence-bar-fill warning";
+                confidenceBarFill.style.width = `${confidenceScore}%`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Use official slim Python image
+FROM python:3.11-slim
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies needed for image processing libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements file
+COPY requirements.txt .
+
+# Install dependencies
+# TIP: For production CPU-only cloud instances, we install PyTorch CPU-only version to significantly reduce Docker image size (saves ~2GB of download size)
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY app.py .
+COPY index.html .
+COPY models/ ./models/
+
+# Expose the API port
+EXPOSE 8000
+
+# Run FastAPI app using uvicorn
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]

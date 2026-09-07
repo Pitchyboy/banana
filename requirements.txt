@@ -1,1 +1,10 @@
-fastapi[all]
+torch
+torchvision
+matplotlib
+pillow
+scikit-learn
+numpy
+pandas
+fastapi
+uvicorn
+python-multipart
