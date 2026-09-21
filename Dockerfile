@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Set work directory
 WORKDIR /app
 RUN pip install gdown
-RUN python -c "import requests; r = requests.get('https://drive.google.com/uc?export=download&id=10J1f6WZmaPGRD0djIakhFnnpIwOiQ9Iz', stream=True); open('best_model.pth', 'wb').write(r.content)"
+RUN python -c "import requests; url = 'https://drive.google.com/uc?export=download&id=10J1f6WZmaPGRD0djIakhFnnpIwOiQ9Iz'; session = requests.Session(); res = session.get(url, stream=True); token = next((v for k, v in res.cookies.items() if k.startswith('download_warning')), None); res = session.get(url + '&confirm=' + token, stream=True) if token else res; open('best_model.pth', 'wb').write(res.content)"
 
 # Install system dependencies needed for image processing libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
