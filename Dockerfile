@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Set work directory
 WORKDIR /app
 RUN pip install gdown
-RUN python -c "import urllib.request; urllib.request.urlretrieve('ลิงก์จาก_Hugging_Face_ของคุณ', 'best_model.pth')"
+RUN python -c "import urllib.request; urllib.request.urlretrieve('https://huggingface.co/IMI01/banana01/resolve/main/best_model.pth?download=true', 'best_model.pth')"
 
 # Install system dependencies needed for image processing libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
