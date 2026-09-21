@@ -1,3 +1,5 @@
+RUN pip install gdown
+RUN gdown 10J1f6WZmaPGRD0djIakhFnnpIwOiQ9Iz -O best_model.pth
 # Use official slim Python image
 FROM python:3.11-slim
 
