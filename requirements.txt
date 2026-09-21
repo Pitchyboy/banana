@@ -8,3 +8,4 @@ pandas
 fastapi
 uvicorn
 python-multipart
+gdown
