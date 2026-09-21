@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 import socket
 import gdown
 FILE_ID = "10Jlf6WZmaPGRD0djlakhFnnplwOiQ9Iz"
-MODEL_PATH = "best.pt"
+MODEL_PATH = "best.pth"
 
 if not os.path.exists(MODEL_PATH):
     print("กำลังดาวน์โหลดโมเดล ...")
