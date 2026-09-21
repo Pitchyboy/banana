@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # Set work directory
 WORKDIR /app
 RUN pip install gdown
-RUN gdown --id 10J1f6WZmaPGRD0djIakhFnnpIwOiQ9Iz -O best_model.pth
+RUN python -c "import requests; r = requests.get('https://drive.google.com/uc?export=download&id=10J1f6WZmaPGRD0djIakhFnnpIwOiQ9Iz', stream=True); open('best_model.pth', 'wb').write(r.content)"
 
 # Install system dependencies needed for image processing libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
