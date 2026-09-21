@@ -11,7 +11,14 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 import socket
+import gdown
+FILE_ID = "10Jlf6WZmaPGRD0djlakhFnnplwOiQ9Iz"
+MODEL_PATH = "best.pt"
 
+if not os.path.exists(MODEL_PATH):
+    print("กำลังดาวน์โหลดโมเดล ...")
+    url = f"https://drive.google.com/uc?id={FILE_ID}"
+    gdown.download(url, MODEL_PATH, quiet=False)
 # Initialize FastAPI application
 app = FastAPI(
     title="Banana Leaf Disease Classifier API",
