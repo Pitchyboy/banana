@@ -98,7 +98,7 @@ def load_resources():
         raise ValueError(f"Unknown model name: {MODEL_NAME}")
         
     print(f"Loading weights from {MODEL_PATH}...")
-    state_dict = torch.load(MODEL_PATH, map_location=torch.device('cpu'))
+   state_dict = torch.load(MODEL_PATH, map_location=torch.device('cpu'), weights_only=False)
     model.load_state_dict(state_dict)
     model = model.to(device)
     model.eval()
