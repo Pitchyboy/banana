@@ -36,8 +36,8 @@ app.add_middleware(
 )
 
 # Paths
-MODEL_PATH = "models/best_model.pth"
-MAPPING_PATH = "models/class_mapping.json"
+MODEL_PATH = "best_model.pth"
+MAPPING_PATH = "class_mapping.json"
 MODEL_NAME = "efficientnet"  # Set to "mobilenet" if MobileNet was trained instead
 
 # Global model and mapping storage
